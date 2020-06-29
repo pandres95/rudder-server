@@ -99,6 +99,7 @@ type DestinationT struct {
 	DestinationDefinition DestinationDefinitionT
 	Config                map[string]interface{}
 	Enabled               bool
+	Deleted               bool
 	Transformations       []TransformationT
 	IsProcessorEnabled    bool
 }
@@ -109,6 +110,7 @@ type SourceT struct {
 	SourceDefinition SourceDefinitionT
 	Config           map[string]interface{}
 	Enabled          bool
+	Deleted          bool
 	WorkspaceID      string
 	Destinations     []DestinationT
 	WriteKey         string

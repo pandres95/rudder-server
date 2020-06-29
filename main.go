@@ -16,6 +16,7 @@ import (
 
 	"github.com/bugsnag/bugsnag-go"
 
+	blendoRegistry "github.com/rudderlabs/rudder-server/blendo/registry"
 	"github.com/rudderlabs/rudder-server/replay"
 	"github.com/rudderlabs/rudder-server/services/diagnostics"
 
@@ -51,6 +52,7 @@ var (
 	gwDBRetention, routerDBRetention time.Duration
 	enableProcessor, enableRouter    bool
 	isReplayServer                   bool
+	blendoEnabled                    bool
 	enabledDestinations              []backendconfig.DestinationT
 	configSubscriberLock             sync.RWMutex
 	objectStorageDestinations        []string
@@ -71,6 +73,7 @@ func loadConfig() {
 	enableProcessor = config.GetBool("enableProcessor", true)
 	enableRouter = config.GetBool("enableRouter", true)
 	isReplayServer = config.GetEnvAsBool("IS_REPLAY_SERVER", false)
+	blendoEnabled = config.GetEnvAsBool("BLENDO_ENABLED", true)
 	objectStorageDestinations = []string{"S3", "GCS", "AZURE_BLOB", "MINIO"}
 	warehouseDestinations = []string{"RS", "BQ", "SNOWFLAKE", "POSTGRES"}
 	warehouseMode = config.GetString("Warehouse.mode", "embedded")
@@ -192,6 +195,12 @@ func startRudderCore(clearDB *bool, normalMode bool, degradedMode bool, maintena
 	routerDB.Setup(*clearDB, "rt", routerDBRetention, migrationMode, true)
 	batchRouterDB.Setup(*clearDB, "batch_rt", routerDBRetention, migrationMode, true)
 	procErrorDB.Setup(*clearDB, "proc_error", routerDBRetention, migrationMode, false)
+
+	// Setup blendo registry to update config
+	if blendoEnabled {
+		blendoRegistry := &blendoRegistry.BlendoRegistry{}
+		blendoRegistry.Setup()
+	}
 
 	enableGateway := true
 
